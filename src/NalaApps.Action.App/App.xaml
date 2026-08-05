@@ -3,15 +3,121 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F7FB" />
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB" />
-        <SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F2F2F7" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#0A84FF" />
+        <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#0071E3" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#FF3B30" />
         <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
-        <Style TargetType="Button">
-            <Setter Property="Padding" Value="16,9" />
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#111111" />
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6E6E73" />
+        <SolidColorBrush x:Key="DividerBrush" Color="#E5E5EA" />
+        <SolidColorBrush x:Key="ControlBrush" Color="#F2F2F7" />
+
+        <DropShadowEffect x:Key="CardShadow"
+                          BlurRadius="24"
+                          ShadowDepth="3"
+                          Opacity="0.10"
+                          Color="#000000" />
+
+        <Style TargetType="Window">
+            <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="13"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PillButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="16,10" />
             <Setter Property="Margin" Value="4" />
             <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="18"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.86" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.68" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.40" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryPillButtonStyle" TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style x:Key="DangerPillButtonStyle" TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+            <Setter Property="Background" Value="#FFF0EF" />
+            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="#F7F7FA"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#E8F3FF" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EEEEF3" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Application.Resources>
 </Application>
