@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NalaApps.Action.Core", "src\NalaApps.Action.Core\NalaApps.Action.Core.csproj", "{56EDC967-5EE2-4E6B-9D2E-D1EC51DC2C44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NalaApps.Action.Windows", "src\NalaApps.Action.Windows\NalaApps.Action.Windows.csproj", "{8D54D6D5-8AB7-40E1-8D4F-F21987598B89}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NalaApps.Action.Infrastructure", "src\NalaApps.Action.Infrastructure\NalaApps.Action.Infrastructure.csproj", "{A1C8661A-176A-459E-BB4E-68F79D83A431}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NalaApps.Action.App", "src\NalaApps.Action.App\NalaApps.Action.App.csproj", "{BE453576-843F-4B8A-9381-35AF01EAE655}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NalaApps.Action.Core.Tests", "tests\NalaApps.Action.Core.Tests\NalaApps.Action.Core.Tests.csproj", "{87A75E9F-E0D5-4E8A-9F0A-B1176EAD74E1}"
+EndProject
+Global
+  GlobalSection(SolutionConfigurationPlatforms) = preSolution
+    Debug|Any CPU = Debug|Any CPU
+    Release|Any CPU = Release|Any CPU
+  EndGlobalSection
+  GlobalSection(ProjectConfigurationPlatforms) = postSolution
+    {56EDC967-5EE2-4E6B-9D2E-D1EC51DC2C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {56EDC967-5EE2-4E6B-9D2E-D1EC51DC2C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {56EDC967-5EE2-4E6B-9D2E-D1EC51DC2C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {56EDC967-5EE2-4E6B-9D2E-D1EC51DC2C44}.Release|Any CPU.Build.0 = Release|Any CPU
+    {8D54D6D5-8AB7-40E1-8D4F-F21987598B89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {8D54D6D5-8AB7-40E1-8D4F-F21987598B89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {8D54D6D5-8AB7-40E1-8D4F-F21987598B89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {8D54D6D5-8AB7-40E1-8D4F-F21987598B89}.Release|Any CPU.Build.0 = Release|Any CPU
+    {A1C8661A-176A-459E-BB4E-68F79D83A431}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {A1C8661A-176A-459E-BB4E-68F79D83A431}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {A1C8661A-176A-459E-BB4E-68F79D83A431}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {A1C8661A-176A-459E-BB4E-68F79D83A431}.Release|Any CPU.Build.0 = Release|Any CPU
+    {BE453576-843F-4B8A-9381-35AF01EAE655}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {BE453576-843F-4B8A-9381-35AF01EAE655}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {BE453576-843F-4B8A-9381-35AF01EAE655}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {BE453576-843F-4B8A-9381-35AF01EAE655}.Release|Any CPU.Build.0 = Release|Any CPU
+    {87A75E9F-E0D5-4E8A-9F0A-B1176EAD74E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {87A75E9F-E0D5-4E8A-9F0A-B1176EAD74E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {87A75E9F-E0D5-4E8A-9F0A-B1176EAD74E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {87A75E9F-E0D5-4E8A-9F0A-B1176EAD74E1}.Release|Any CPU.Build.0 = Release|Any CPU
+  EndGlobalSection
+EndGlobal
