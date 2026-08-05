@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore .\src\NalaApps.Action.App\NalaApps.Action.App.csproj
+      - name: Build
+        run: dotnet build .\src\NalaApps.Action.App\NalaApps.Action.App.csproj -c Release --no-restore
+      - name: Publish
+        run: dotnet publish .\src\NalaApps.Action.App\NalaApps.Action.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\publish
