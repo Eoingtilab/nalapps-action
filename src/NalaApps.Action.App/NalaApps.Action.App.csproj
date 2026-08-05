@@ -12,4 +12,9 @@
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\NalaApps.Action.Splash.jpg" />
+    <Resource Include="Assets\NalaApps.Action.Splash.jpg" />
+  </ItemGroup>
 </Project>
