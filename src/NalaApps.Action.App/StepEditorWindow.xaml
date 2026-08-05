@@ -1,0 +1,49 @@
+<Window x:Class="NalaApps.Action.App.StepEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="단계 편집"
+        Width="420" Height="430"
+        MinWidth="380" MinHeight="390"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource AppBackgroundBrush}">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border Background="{StaticResource CardBrush}" CornerRadius="24" Padding="20" Effect="{StaticResource CardShadow}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="단계 편집" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="동작 종류와 실행 값을 수정할 수 있습니다."
+                               Margin="0,4,0,16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="동작 종류" FontWeight="SemiBold" />
+                    <ComboBox x:Name="TypeCombo" Margin="0,7,0,13" SelectionChanged="TypeCombo_SelectionChanged">
+                        <ComboBoxItem Tag="MouseMove" Content="마우스 이동" />
+                        <ComboBoxItem Tag="MouseButton" Content="마우스 버튼" />
+                        <ComboBoxItem Tag="MouseWheel" Content="마우스 휠" />
+                        <ComboBoxItem Tag="KeyPress" Content="키보드 입력" />
+                        <ComboBoxItem Tag="TextInput" Content="텍스트 입력" />
+                        <ComboBoxItem Tag="Wait" Content="대기 시간" />
+                    </ComboBox>
+                    <TextBlock Text="단계 이름" FontWeight="SemiBold" />
+                    <TextBox x:Name="NameTextBox" Margin="0,7,0,13" />
+                    <TextBlock x:Name="ValueLabel" Text="실행 값" FontWeight="SemiBold" />
+                    <TextBox x:Name="ValueTextBox" Margin="0,7,0,13" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="64" />
+                    <TextBlock Text="실행 전 대기(ms)" FontWeight="SemiBold" />
+                    <TextBox x:Name="DelayTextBox" Margin="0,7,0,13" />
+                    <CheckBox x:Name="EnabledCheckBox" Content="이 단계 실행" IsChecked="True" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+        <Grid Grid.Row="1" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="취소" Style="{StaticResource PillButtonStyle}" Click="Cancel_Click" />
+            <Button Grid.Column="1" Content="저장" Style="{StaticResource PrimaryPillButtonStyle}" Click="Save_Click" />
+        </Grid>
+    </Grid>
+</Window>
