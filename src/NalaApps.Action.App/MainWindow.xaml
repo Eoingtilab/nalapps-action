@@ -29,8 +29,7 @@
                 <StackPanel>
                     <TextBlock Text="NalaApps Action"
                                FontSize="28"
-                               FontWeight="Bold"
-                               LetterSpacing="-0.4" />
+                               FontWeight="Bold" />
                     <TextBlock Text="내가 한 작업을 기억하고 다시 실행해요"
                                Margin="0,5,0,0"
                                FontSize="14"
