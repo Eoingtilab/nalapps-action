@@ -8,6 +8,16 @@
     <AssemblyName>NalaApps.Action</AssemblyName>
     <RootNamespace>NalaApps.Action.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\NalaApps.Action.ico</ApplicationIcon>
+    <Product>날라액션</Product>
+    <AssemblyTitle>날라액션</AssemblyTitle>
+    <Description>Windows 작업을 기록하고 다시 실행하는 NALLA APPS 액션 자동화 유틸리티</Description>
+    <Company>EoingtiLab Inc.</Company>
+    <Authors>EoingtiLab Inc.</Authors>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <InformationalVersion>0.1.0</InformationalVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -16,5 +26,10 @@
   <ItemGroup>
     <None Remove="Assets\NalaApps.Action.Splash.jpg" />
     <Resource Include="Assets\NalaApps.Action.Splash.jpg" />
+    <None Include="Assets\NalaApps.Action.icon.base64" />
   </ItemGroup>
+
+  <Target Name="GenerateApplicationIcon" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$b=[Convert]::FromBase64String([IO.File]::ReadAllText('$(MSBuildProjectDirectory)\Assets\NalaApps.Action.icon.base64')); [IO.File]::WriteAllBytes('$(MSBuildProjectDirectory)\Assets\NalaApps.Action.ico',$b)&quot;" />
+  </Target>
 </Project>
