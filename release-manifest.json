@@ -1,8 +1,10 @@
 {
   "product": "날라액션",
+  "product_id": "utility-action",
   "product_slug": "nalla-action",
   "version": "1.0.0",
-  "tag": "v1.0.0",
+  "source_tag": "v1.0.0",
+  "release_tag": "utility-action-v1.0.0",
   "platform": "windows",
   "architecture": "x64",
   "runtime": "win-x64",
