@@ -1,22 +1,132 @@
-name: CI
+name: Build and Release
 
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PROJECT: .\src\NalaApps.Action.App\NalaApps.Action.App.csproj
+  RELEASE_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
 
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
       - name: Restore
-        run: dotnet restore .\src\NalaApps.Action.App\NalaApps.Action.App.csproj
+        shell: pwsh
+        run: dotnet restore $env:PROJECT
+
       - name: Build
-        run: dotnet build .\src\NalaApps.Action.App\NalaApps.Action.App.csproj -c Release --no-restore
-      - name: Publish
-        run: dotnet publish .\src\NalaApps.Action.App\NalaApps.Action.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\publish
+        shell: pwsh
+        run: dotnet build $env:PROJECT -c Release --no-restore -warnaserror
+
+      - name: Publish self-contained single file
+        shell: pwsh
+        run: |
+          Remove-Item .\publish -Recurse -Force -ErrorAction SilentlyContinue
+          dotnet publish $env:PROJECT `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            --no-restore `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o .\publish
+
+      - name: Validate production binary
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path '.\publish\NalaApps.Action.exe' -ErrorAction Stop
+          $versionFile = (Get-Content '.\VERSION' -Raw).Trim()
+          $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
+          $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe)
+
+          if ($versionFile -ne '1.0.0') { throw "VERSION mismatch: $versionFile" }
+          if ($manifest.version -ne $versionFile) { throw "release-manifest version mismatch" }
+          if ($manifest.tag -ne "v$versionFile") { throw "release-manifest tag mismatch" }
+          if ($info.FileVersion -ne '1.0.0.0') { throw "EXE FileVersion mismatch: $($info.FileVersion)" }
+          if ($info.ProductName -ne '날라액션') { throw "EXE ProductName mismatch: $($info.ProductName)" }
+          if (-not (Test-Path '.\src\NalaApps.Action.App\Assets\NalaApps.Action.ico')) { throw 'Generated application icon is missing.' }
+          if ((Get-Item $exe).Length -lt 1MB) { throw 'Published executable is unexpectedly small.' }
+
+          Write-Host "Validated: $exe"
+          Write-Host "Product: $($info.ProductName)"
+          Write-Host "Version: $($info.FileVersion)"
+
+      - name: Create release package and SHA-256
+        shell: pwsh
+        run: |
+          $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
+          New-Item -ItemType Directory -Force '.\artifacts' | Out-Null
+          $zip = Join-Path '.\artifacts' $manifest.artifact_name
+          $checksum = Join-Path '.\artifacts' $manifest.checksum_name
+
+          Compress-Archive -Path '.\publish\*' -DestinationPath $zip -CompressionLevel Optimal -Force
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($manifest.artifact_name)" | Set-Content $checksum -Encoding ascii
+
+          if ((Get-Item $zip).Length -lt 1MB) { throw 'Release ZIP is unexpectedly small.' }
+          if ((Get-Content $checksum -Raw).Length -lt 64) { throw 'SHA-256 checksum was not generated.' }
+
+      - name: Upload verified build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NallaAction-windows-x64
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Validate release credentials
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:RELEASE_TOKEN)) {
+            throw 'Repository secret NALAPPS_RELEASE_TOKEN is required to publish to Eoingtilab/nalapps-releases.'
+          }
+
+      - name: Publish stable release to nalapps-releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
+        run: |
+          $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
+          $tag = $manifest.tag
+          $repo = $manifest.release_repository
+          $zip = Join-Path '.\artifacts' $manifest.artifact_name
+          $checksum = Join-Path '.\artifacts' $manifest.checksum_name
+          $notes = '.\docs\RELEASE_NOTES_v1.0.0.md'
+
+          gh release view $tag --repo $repo *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $zip $checksum --repo $repo --clobber
+          }
+          else {
+            gh release create $tag $zip $checksum --repo $repo --title "날라액션 v1.0.0" --notes-file $notes --latest
+          }
+
+      - name: Final release assertion
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
+        run: |
+          $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
+          gh release view $manifest.tag --repo $manifest.release_repository --json tagName,isLatest,url | Write-Host
