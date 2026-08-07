@@ -1,14 +1,17 @@
 {
   "product": "날라액션",
   "product_slug": "nalla-action",
-  "version": "0.1.0",
-  "tag": "v0.1.0",
+  "version": "1.0.0",
+  "tag": "v1.0.0",
   "platform": "windows",
   "architecture": "x64",
   "runtime": "win-x64",
   "source_repository": "Eoingtilab/nalapps-action",
   "release_repository": "Eoingtilab/nalapps-releases",
-  "artifact_name": "NallaAction-v0.1.0-win-x64.zip",
+  "artifact_name": "NallaAction-v1.0.0-win-x64.zip",
+  "checksum_name": "NallaAction-v1.0.0-SHA256.txt",
   "executable_name": "NalaApps.Action.exe",
-  "edd_product_name": "날라액션"
+  "edd_product_name": "날라액션",
+  "edd_version": "1.0.0",
+  "release_channel": "stable"
 }
