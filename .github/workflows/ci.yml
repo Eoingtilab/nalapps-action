@@ -3,16 +3,14 @@ name: Build and Release
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   PROJECT: .\src\NalaApps.Action.App\NalaApps.Action.App.csproj
-  RELEASE_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
 
 jobs:
   build:
@@ -21,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: dotnet restore $env:PROJECT
 
-      - name: Build
+      - name: Build with warnings as errors
         shell: pwsh
         run: dotnet build $env:PROJECT -c Release --no-restore -warnaserror
 
@@ -50,7 +50,7 @@ jobs:
             -p:DebugSymbols=false `
             -o .\publish
 
-      - name: Validate production binary
+      - name: Validate production binary and manifest
         shell: pwsh
         run: |
           $exe = Resolve-Path '.\publish\NalaApps.Action.exe' -ErrorAction Stop
@@ -59,18 +59,19 @@ jobs:
           $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe)
 
           if ($versionFile -ne '1.0.0') { throw "VERSION mismatch: $versionFile" }
-          if ($manifest.version -ne $versionFile) { throw "release-manifest version mismatch" }
-          if ($manifest.tag -ne "v$versionFile") { throw "release-manifest tag mismatch" }
+          if ($manifest.version -ne $versionFile) { throw 'release-manifest version mismatch' }
+          if ($manifest.source_tag -ne "v$versionFile") { throw 'source tag mismatch' }
+          if ($manifest.release_tag -ne "utility-action-v$versionFile") { throw 'distribution tag mismatch' }
           if ($info.FileVersion -ne '1.0.0.0') { throw "EXE FileVersion mismatch: $($info.FileVersion)" }
           if ($info.ProductName -ne '날라액션') { throw "EXE ProductName mismatch: $($info.ProductName)" }
           if (-not (Test-Path '.\src\NalaApps.Action.App\Assets\NalaApps.Action.ico')) { throw 'Generated application icon is missing.' }
           if ((Get-Item $exe).Length -lt 1MB) { throw 'Published executable is unexpectedly small.' }
 
-          Write-Host "Validated: $exe"
+          Write-Host "Validated binary: $exe"
           Write-Host "Product: $($info.ProductName)"
           Write-Host "Version: $($info.FileVersion)"
 
-      - name: Create release package and SHA-256
+      - name: Create ZIP and SHA-256
         shell: pwsh
         run: |
           $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
@@ -85,48 +86,74 @@ jobs:
           if ((Get-Item $zip).Length -lt 1MB) { throw 'Release ZIP is unexpectedly small.' }
           if ((Get-Content $checksum -Raw).Length -lt 64) { throw 'SHA-256 checksum was not generated.' }
 
-      - name: Upload verified build artifact
+      - name: Upload verified workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NallaAction-windows-x64
+          name: NallaAction-v1.0.0-windows-x64
           path: artifacts/*
           if-no-files-found: error
           retention-days: 30
 
-      - name: Validate release credentials
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create verified source tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: stable_tag
         shell: pwsh
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:RELEASE_TOKEN)) {
-            throw 'Repository secret NALAPPS_RELEASE_TOKEN is required to publish to Eoingtilab/nalapps-releases.'
-          }
-
-      - name: Publish stable release to nalapps-releases
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
         run: |
           $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
-          $tag = $manifest.tag
-          $repo = $manifest.release_repository
+          $tag = $manifest.source_tag
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+          git fetch --tags --force
+          $existing = git tag -l $tag
+          if ([string]::IsNullOrWhiteSpace($existing)) {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag -a $tag -m "날라액션 $($manifest.version) verified stable"
+            git push origin $tag
+            "tag_created=true" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            $tagCommit = (git rev-list -n 1 $tag).Trim()
+            if ($tagCommit -ne '${{ github.sha }}') {
+              Write-Host "Stable tag $tag already points to $tagCommit; preserving immutable tag."
+              "tag_created=false" >> $env:GITHUB_OUTPUT
+              "tag_matches_head=false" >> $env:GITHUB_OUTPUT
+              exit 0
+            }
+            "tag_created=false" >> $env:GITHUB_OUTPUT
+          }
+          "tag_matches_head=true" >> $env:GITHUB_OUTPUT
+
+      - name: Create verified source GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.stable_tag.outputs.tag_matches_head == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
+          $tag = $manifest.source_tag
           $zip = Join-Path '.\artifacts' $manifest.artifact_name
           $checksum = Join-Path '.\artifacts' $manifest.checksum_name
           $notes = '.\docs\RELEASE_NOTES_v1.0.0.md'
 
-          gh release view $tag --repo $repo *> $null
+          gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag $zip $checksum --repo $repo --clobber
+            gh release upload $tag $zip $checksum --clobber
           }
           else {
-            gh release create $tag $zip $checksum --repo $repo --title "날라액션 v1.0.0" --notes-file $notes --latest
+            gh release create $tag $zip $checksum --title "날라액션 v1.0.0" --notes-file $notes
           }
 
-      - name: Final release assertion
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Verify source Release assets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.stable_tag.outputs.tag_matches_head == 'true'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ secrets.NALAPPS_RELEASE_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           $manifest = Get-Content '.\release-manifest.json' -Raw | ConvertFrom-Json
-          gh release view $manifest.tag --repo $manifest.release_repository --json tagName,isLatest,url | Write-Host
+          $json = gh release view $manifest.source_tag --json tagName,assets,url | ConvertFrom-Json
+          if ($json.tagName -ne $manifest.source_tag) { throw 'Source release tag verification failed.' }
+          $names = @($json.assets | ForEach-Object { $_.name })
+          if ($names -notcontains $manifest.artifact_name) { throw 'ZIP is missing from source release.' }
+          if ($names -notcontains $manifest.checksum_name) { throw 'Checksum is missing from source release.' }
+          Write-Host "Verified source release: $($json.url)"
