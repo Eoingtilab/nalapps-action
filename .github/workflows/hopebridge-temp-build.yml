@@ -1,0 +1,68 @@
+name: HopeBridge Temporary Android APK Build
+
+on:
+  push:
+    branches:
+      - tmp/hopebridge-apk-build-20260903
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Setup Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          cd .tmp-hopebridge
+          gradle --no-daemon assembleDebug
+
+      - name: Verify debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$GITHUB_WORKSPACE/.tmp-hopebridge/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep "package: name='hopebridgenew.mobile'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep "targetSdkVersion:'36'"
+          if unzip -l "$APK" | grep -E 'lib/.*\.so$'; then
+            echo "Unexpected native .so library found." >&2
+            exit 1
+          fi
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          cp "$APK" "$GITHUB_WORKSPACE/HopeBridge-debug.apk"
+          sha256sum "$GITHUB_WORKSPACE/HopeBridge-debug.apk" > "$GITHUB_WORKSPACE/HopeBridge-debug.apk.sha256.txt"
+
+      - name: Upload web-test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HopeBridge-debug-apk
+          path: |
+            HopeBridge-debug.apk
+            HopeBridge-debug.apk.sha256.txt
+          if-no-files-found: error
+          retention-days: 7
