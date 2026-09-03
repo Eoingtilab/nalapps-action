@@ -1,9 +1,9 @@
-name: HopeBridge Temporary Release AAB Build
+name: HopeBridge Maintenance Internal Test AAB Build
 
 on:
   push:
     branches:
-      - tmp/hopebridge-aab-build-20260903
+      - tmp/hopebridge-maintenance-aab-20260903
 
 permissions:
   contents: read
@@ -52,15 +52,15 @@ jobs:
             echo "Unexpected native .so library found." >&2
             exit 1
           fi
-          cp "$AAB" "$GITHUB_WORKSPACE/HopeBridge-release-unsigned.aab"
-          sha256sum "$GITHUB_WORKSPACE/HopeBridge-release-unsigned.aab" > "$GITHUB_WORKSPACE/HopeBridge-release-unsigned.aab.sha256.txt"
+          cp "$AAB" "$GITHUB_WORKSPACE/HopeBridge-maintenance-internal-unsigned.aab"
+          sha256sum "$GITHUB_WORKSPACE/HopeBridge-maintenance-internal-unsigned.aab" > "$GITHUB_WORKSPACE/HopeBridge-maintenance-internal-unsigned.aab.sha256.txt"
 
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
         with:
-          name: HopeBridge-release-unsigned-aab
+          name: HopeBridge-maintenance-internal-aab
           path: |
-            HopeBridge-release-unsigned.aab
-            HopeBridge-release-unsigned.aab.sha256.txt
+            HopeBridge-maintenance-internal-unsigned.aab
+            HopeBridge-maintenance-internal-unsigned.aab.sha256.txt
           if-no-files-found: error
           retention-days: 1
