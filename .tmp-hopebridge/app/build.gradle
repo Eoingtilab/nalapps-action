@@ -1,0 +1,30 @@
+plugins {
+	id 'com.android.application'
+}
+
+android {
+	namespace 'hopebridgenew.mobile'
+	compileSdk 36
+
+	defaultConfig {
+		applicationId 'hopebridgenew.mobile'
+		minSdk 24
+		targetSdk 36
+		versionCode 20260903
+		versionName '2.0.0-debug'
+	}
+
+	buildTypes {
+		debug {
+			applicationIdSuffix ''
+		}
+		release {
+			minifyEnabled false
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+}
